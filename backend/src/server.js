@@ -2,6 +2,7 @@ const app = require("./app");
 const env = require("./config/env");
 const logger = require("./config/logger");
 const database = require("./config/database")
+require("./models");
 
 server = async () => {
     try {
