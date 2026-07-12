@@ -433,7 +433,12 @@ export default function EmployeesTab() {
                   <button
                     className="btn btn-outline"
                     style={{ padding: "6px 12px", fontSize: "12px" }}
-                    onClick={() => { setErrorMsg(""); setShowRevisionModal(true); }}
+                    onClick={() => {
+                      setErrorMsg("");
+                      const defaultCurr = selectedEmployee?.country?.currency || "INR";
+                      setRevisionForm(prev => ({ ...prev, currency: defaultCurr }));
+                      setShowRevisionModal(true);
+                    }}
                     id="btn-add-revision"
                   >
                     <Plus size={14} />
@@ -501,6 +506,8 @@ export default function EmployeesTab() {
                     onChange={e => setRevisionForm({ ...revisionForm, currency: e.target.value })}
                     required
                     id="revision-currency"
+                    disabled
+                    style={{ opacity: 0.6, cursor: "not-allowed" }}
                   >
                     {[...new Set(lookups.countries.map(c => c.currency))].map(curr => (
                       <option key={curr} value={curr}>{curr}</option>
