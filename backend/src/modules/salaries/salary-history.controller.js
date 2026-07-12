@@ -2,47 +2,36 @@ const BaseController = require("../base.controller");
 const { HTTP_STATUS } = require("../../utils/constants");
 
 class SalaryHistoryController extends BaseController {
-    constructor(salaryHistoryRepository, employeeRepository) {
+    constructor(salaryHistoryService) {
         super();
-        this.salaryHistoryRepository = salaryHistoryRepository;
-        this.employeeRepository = employeeRepository;
+        this.salaryHistoryService = salaryHistoryService;
     }
 
     async getHistory(req, res, next) {
         try {
             const employeeId = parseInt(req.params.id, 10);
-            const employee = await this.employeeRepository.findById(employeeId);
-            if (!employee) {
-                return this.errorResponseWithoutData(res, HTTP_STATUS.NOT_FOUND, "Employee not found");
-            }
-
-            const history = await this.salaryHistoryRepository.findByEmployeeId(employeeId);
+            const history = await this.salaryHistoryService.getHistory(employeeId);
             return this.successResponseData(res, history, 1, "Salary history fetched successfully");
         } catch (error) {
-            return this.internalServerErrorResponse(res);
+            return this.errorResponseWithoutData(
+                res,
+                error.statusCode || HTTP_STATUS.BAD_REQUEST,
+                error.message
+            );
         }
     }
 
     async addRecord(req, res, next) {
         try {
             const employeeId = parseInt(req.params.id, 10);
-            const employee = await this.employeeRepository.findById(employeeId);
-            if (!employee) {
-                return this.errorResponseWithoutData(res, HTTP_STATUS.NOT_FOUND, "Employee not found");
-            }
-
-            const payload = {
-                employeeId,
-                salary: parseFloat(req.body.salary),
-                currency: req.body.currency,
-                effectiveDate: req.body.effectiveDate,
-                revisionReason: req.body.revisionReason
-            };
-
-            const record = await this.salaryHistoryRepository.create(payload);
+            const record = await this.salaryHistoryService.addRecord(employeeId, req.body);
             return this.successResponseData(res, record, 1, "Salary record added successfully");
         } catch (error) {
-            return this.errorResponseWithoutData(res, HTTP_STATUS.BAD_REQUEST, error.message);
+            return this.errorResponseWithoutData(
+                res,
+                error.statusCode || HTTP_STATUS.BAD_REQUEST,
+                error.message
+            );
         }
     }
 }

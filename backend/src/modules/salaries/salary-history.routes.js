@@ -1,16 +1,22 @@
-const SalaryHistoryController = require("./salary-history.controller");
+const SalaryHistoryValidator = require("./salary-history.validator");
 
 module.exports = (router, container) => {
-    const { salaryHistoryRepository, employeeRepository } = container;
-    const controller = new SalaryHistoryController(salaryHistoryRepository, employeeRepository);
+    const { salaryHistoryController } = container;
 
     router.get(
         "/employees/:id/salary-history",
-        controller.getHistory.bind(controller)
+        salaryHistoryController.getHistory.bind(salaryHistoryController)
     );
 
     router.post(
         "/employees/:id/salary-history",
-        controller.addRecord.bind(controller)
+        (req, res, next) => {
+            SalaryHistoryValidator.addSalaryValidation(req, res, (isValid) => {
+                if (isValid === true) {
+                    next();
+                }
+            });
+        },
+        salaryHistoryController.addRecord.bind(salaryHistoryController)
     );
 };
