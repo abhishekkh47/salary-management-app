@@ -153,7 +153,8 @@ class EmployeeService {
                 { association: "department" },
                 { association: "designation" },
                 { association: "employmentType" },
-                { association: "country" }
+                { association: "country" },
+                { association: "subordinates", attributes: ["id", "employeeCode", "firstName", "lastName", "email"] }
             ]
         });
         if (!employee) {
@@ -244,7 +245,8 @@ class EmployeeService {
                     { association: "department" },
                     { association: "designation" },
                     { association: "employmentType" },
-                    { association: "country" }
+                    { association: "country" },
+                    { association: "subordinates", attributes: ["id", "employeeCode", "firstName", "lastName", "email"] }
                 ]
             });
         } catch (error) {

@@ -37,6 +37,7 @@ export default function EmployeesTab() {
   const [showDrawer, setShowDrawer] = useState(false);
   const [showRevisionModal, setShowRevisionModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [drawerTab, setDrawerTab] = useState("overview");
 
   // Revision Form State
   const [revisionForm, setRevisionForm] = useState({
@@ -110,6 +111,7 @@ export default function EmployeesTab() {
     try {
       const details = await api.getEmployeeById(emp.id);
       setSelectedEmployee(details.data);
+      setDrawerTab("overview");
       setShowDrawer(true);
     } catch (e) {
       alert("Error fetching employee details: " + e.message);
@@ -386,83 +388,171 @@ export default function EmployeesTab() {
                 </button>
               </div>
 
-              <div className="info-section" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginTop: "16px" }}>
-                <div>
-                  <span style={{ fontSize: "12px", color: "#9ca3af" }}>Email</span>
-                  <p style={{ fontSize: "14px", fontWeight: 500 }}>{selectedEmployee.email}</p>
-                </div>
-                <div>
-                  <span style={{ fontSize: "12px", color: "#9ca3af" }}>Gender</span>
-                  <p style={{ fontSize: "14px", fontWeight: 500 }}>{selectedEmployee.gender}</p>
-                </div>
-                <div>
-                  <span style={{ fontSize: "12px", color: "#9ca3af" }}>Department</span>
-                  <p style={{ fontSize: "14px", fontWeight: 500 }}>{selectedEmployee.department ? selectedEmployee.department.name : "N/A"}</p>
-                </div>
-                <div>
-                  <span style={{ fontSize: "12px", color: "#9ca3af" }}>Employment Type</span>
-                  <p style={{ fontSize: "14px", fontWeight: 500 }}>
-                    {selectedEmployee.employmentType ? selectedEmployee.employmentType.name.replace("_", " ") : "N/A"}
-                  </p>
-                </div>
-                <div>
-                  <span style={{ fontSize: "12px", color: "#9ca3af" }}>Country</span>
-                  <p style={{ fontSize: "14px", fontWeight: 500 }}>{selectedEmployee.country ? selectedEmployee.country.name : "N/A"}</p>
-                </div>
-                <div>
-                  <span style={{ fontSize: "12px", color: "#9ca3af" }}>Work Location</span>
-                  <p style={{ fontSize: "14px", fontWeight: 500 }}>{selectedEmployee.workLocation}</p>
-                </div>
-                <div>
-                  <span style={{ fontSize: "12px", color: "#9ca3af" }}>Joining Date</span>
-                  <p style={{ fontSize: "14px", fontWeight: 500 }}>{new Date(selectedEmployee.joiningDate).toLocaleDateString()}</p>
-                </div>
-                <div>
-                  <span style={{ fontSize: "12px", color: "#9ca3af" }}>Manager ID</span>
-                  <p style={{ fontSize: "14px", fontWeight: 500 }}>{selectedEmployee.managerId || "None"}</p>
-                </div>
+              {/* Tab Selector Header */}
+              <div className="drawer-tabs" style={{ display: "flex", gap: "16px", borderBottom: "1px solid #2e303a", marginBottom: "8px", marginTop: "8px" }}>
+                <button
+                  style={{
+                    padding: "8px 4px",
+                    background: "none",
+                    border: "none",
+                    color: drawerTab === "overview" ? "#8b5cf6" : "#9ca3af",
+                    borderBottom: drawerTab === "overview" ? "2px solid #8b5cf6" : "2px solid transparent",
+                    cursor: "pointer",
+                    fontWeight: 600,
+                    fontSize: "14px"
+                  }}
+                  onClick={() => setDrawerTab("overview")}
+                  id="tab-drawer-overview"
+                >Overview</button>
+                <button
+                  style={{
+                    padding: "8px 4px",
+                    background: "none",
+                    border: "none",
+                    color: drawerTab === "history" ? "#8b5cf6" : "#9ca3af",
+                    borderBottom: drawerTab === "history" ? "2px solid #8b5cf6" : "2px solid transparent",
+                    cursor: "pointer",
+                    fontWeight: 600,
+                    fontSize: "14px"
+                  }}
+                  onClick={() => setDrawerTab("history")}
+                  id="tab-drawer-history"
+                >Salary History</button>
+                <button
+                  style={{
+                    padding: "8px 4px",
+                    background: "none",
+                    border: "none",
+                    color: drawerTab === "reports" ? "#8b5cf6" : "#9ca3af",
+                    borderBottom: drawerTab === "reports" ? "2px solid #8b5cf6" : "2px solid transparent",
+                    cursor: "pointer",
+                    fontWeight: 600,
+                    fontSize: "14px"
+                  }}
+                  onClick={() => setDrawerTab("reports")}
+                  id="tab-drawer-reports"
+                >Direct Reports ({selectedEmployee.subordinates?.length || 0})</button>
               </div>
 
-              {/* Salary Revision Timeline */}
-              <div style={{ marginTop: "24px", borderTop: "1px solid #2e303a", paddingTop: "24px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-                  <h3 style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "16px" }}>
-                    <History size={16} className="kpi-icon" />
-                    <span>Salary & Revision History</span>
-                  </h3>
-                  <button
-                    className="btn btn-outline"
-                    style={{ padding: "6px 12px", fontSize: "12px" }}
-                    onClick={() => {
-                      setErrorMsg("");
-                      const defaultCurr = selectedEmployee?.country?.currency || "INR";
-                      setRevisionForm(prev => ({ ...prev, currency: defaultCurr }));
-                      setShowRevisionModal(true);
-                    }}
-                    id="btn-add-revision"
-                  >
-                    <Plus size={14} />
-                    <span>Revise</span>
-                  </button>
+              {/* Conditional Tab Rendering */}
+              {drawerTab === "overview" && (
+                <div className="info-section" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginTop: "8px" }}>
+                  <div>
+                    <span style={{ fontSize: "12px", color: "#9ca3af" }}>Email</span>
+                    <p style={{ fontSize: "14px", fontWeight: 500 }}>{selectedEmployee.email}</p>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: "12px", color: "#9ca3af" }}>Gender</span>
+                    <p style={{ fontSize: "14px", fontWeight: 500 }}>{selectedEmployee.gender}</p>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: "12px", color: "#9ca3af" }}>Department</span>
+                    <p style={{ fontSize: "14px", fontWeight: 500 }}>{selectedEmployee.department ? selectedEmployee.department.name : "N/A"}</p>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: "12px", color: "#9ca3af" }}>Employment Type</span>
+                    <p style={{ fontSize: "14px", fontWeight: 500 }}>
+                      {selectedEmployee.employmentType ? selectedEmployee.employmentType.name.replace("_", " ") : "N/A"}
+                    </p>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: "12px", color: "#9ca3af" }}>Country</span>
+                    <p style={{ fontSize: "14px", fontWeight: 500 }}>{selectedEmployee.country ? selectedEmployee.country.name : "N/A"}</p>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: "12px", color: "#9ca3af" }}>Work Location</span>
+                    <p style={{ fontSize: "14px", fontWeight: 500 }}>{selectedEmployee.workLocation}</p>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: "12px", color: "#9ca3af" }}>Joining Date</span>
+                    <p style={{ fontSize: "14px", fontWeight: 500 }}>{new Date(selectedEmployee.joiningDate).toLocaleDateString()}</p>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: "12px", color: "#9ca3af" }}>Manager ID</span>
+                    <p style={{ fontSize: "14px", fontWeight: 500 }}>
+                      {selectedEmployee.managerId ? `EMP${String(selectedEmployee.managerId).padStart(5, "0")}` : "None"}
+                    </p>
+                  </div>
                 </div>
+              )}
 
-                <div className="timeline">
-                  {selectedEmployee.salaryHistory?.sort((a, b) => new Date(b.effectiveDate) - new Date(a.effectiveDate)).map((history) => (
-                    <div className="timeline-item" key={history.id}>
-                      <div className="timeline-dot"></div>
-                      <div className="timeline-content">
-                        <span className="timeline-date">{new Date(history.effectiveDate).toLocaleDateString()}</span>
-                        <span className="timeline-title" style={{ fontSize: "15px", color: "#10b981" }}>
-                          {`${history.currency} ${parseFloat(history.salary).toLocaleString()}`}
-                        </span>
-                        <span className="timeline-desc" style={{ textTransform: "lowercase" }}>
-                          {history.revisionReason.replace("_", " ")}
-                        </span>
-                      </div>
+              {drawerTab === "reports" && (
+                <div style={{ marginTop: "8px" }}>
+                  {selectedEmployee.subordinates && selectedEmployee.subordinates.length > 0 ? (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                      {selectedEmployee.subordinates.map(sub => (
+                        <div
+                          key={sub.id}
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            backgroundColor: "#1f2028",
+                            padding: "10px 12px",
+                            borderRadius: "6px",
+                            border: "1px solid #2e303a",
+                            cursor: "pointer"
+                          }}
+                          onClick={() => handleOpenDrawer(sub)}
+                          className="subordinate-card"
+                        >
+                          <div>
+                            <span style={{ fontSize: "14px", fontWeight: 600 }}>{`${sub.firstName} ${sub.lastName}`}</span>
+                            <p style={{ fontSize: "11px", color: "#9ca3af", marginTop: "2px" }}>{sub.email}</p>
+                          </div>
+                          <span style={{ fontSize: "12px", color: "#8b5cf6", fontWeight: 600 }}>{sub.employeeCode}</span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  ) : (
+                    <p style={{ fontSize: "13px", color: "#9ca3af", fontStyle: "italic" }}>
+                      No direct reports.
+                    </p>
+                  )}
                 </div>
-              </div>
+              )}
+
+              {drawerTab === "history" && (
+                <div style={{ marginTop: "8px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                    <h3 style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "15px", color: "#9ca3af" }}>
+                      <History size={16} />
+                      <span>Revision Timeline</span>
+                    </h3>
+                    <button
+                      className="btn btn-outline"
+                      style={{ padding: "6px 12px", fontSize: "12px" }}
+                      onClick={() => {
+                        setErrorMsg("");
+                        const defaultCurr = selectedEmployee?.country?.currency || "INR";
+                        setRevisionForm(prev => ({ ...prev, currency: defaultCurr }));
+                        setShowRevisionModal(true);
+                      }}
+                      id="btn-add-revision"
+                    >
+                      <Plus size={14} />
+                      <span>Revise</span>
+                    </button>
+                  </div>
+
+                  <div className="timeline">
+                    {selectedEmployee.salaryHistory?.sort((a, b) => new Date(b.effectiveDate) - new Date(a.effectiveDate)).map((history) => (
+                      <div className="timeline-item" key={history.id}>
+                        <div className="timeline-dot"></div>
+                        <div className="timeline-content">
+                          <span className="timeline-date">{new Date(history.effectiveDate).toLocaleDateString()}</span>
+                          <span className="timeline-title" style={{ fontSize: "15px", color: "#10b981" }}>
+                            {`${history.currency} ${parseFloat(history.salary).toLocaleString()}`}
+                          </span>
+                          <span className="timeline-desc" style={{ textTransform: "lowercase" }}>
+                            {history.revisionReason.replace("_", " ")}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </>

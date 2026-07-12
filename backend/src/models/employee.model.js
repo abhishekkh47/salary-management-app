@@ -120,6 +120,10 @@ class Employee extends Model {
             foreignKey: "employeeId",
             as: "salaryHistory"
         });
+        Employee.hasMany(models.Employee, {
+            foreignKey: "managerId",
+            as: "subordinates"
+        });
     }
 }
 
