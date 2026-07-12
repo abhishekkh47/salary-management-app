@@ -2,8 +2,7 @@ const { Model } = require("sequelize");
 
 const {
     Gender,
-    EmploymentStatus,
-    EmploymentType
+    EmploymentStatus
 } = require("../utils/constants");
 
 class Employee extends Model {
@@ -40,17 +39,29 @@ class Employee extends Model {
                     type: DataTypes.ENUM(Object.values(Gender)),
                     allowNull: false
                 },
-                department: {
-                    type: DataTypes.STRING,
-                    allowNull: false
+                departmentId: {
+                    type: DataTypes.INTEGER,
+                    allowNull: false,
+                    references: {
+                        model: "departments",
+                        key: "id"
+                    }
                 },
-                designation: {
-                    type: DataTypes.STRING,
-                    allowNull: false
+                designationId: {
+                    type: DataTypes.INTEGER,
+                    allowNull: false,
+                    references: {
+                        model: "designations",
+                        key: "id"
+                    }
                 },
-                employmentType: {
-                    type: DataTypes.ENUM(Object.values(EmploymentType)),
-                    allowNull: false
+                employmentTypeId: {
+                    type: DataTypes.INTEGER,
+                    allowNull: false,
+                    references: {
+                        model: "employment_types",
+                        key: "id"
+                    }
                 },
                 employmentStatus: {
                     type: DataTypes.ENUM(Object.values(EmploymentStatus)),
@@ -61,9 +72,13 @@ class Employee extends Model {
                     type: DataTypes.DATEONLY,
                     allowNull: false
                 },
-                country: {
-                    type: DataTypes.STRING,
-                    allowNull: false
+                countryId: {
+                    type: DataTypes.INTEGER,
+                    allowNull: false,
+                    references: {
+                        model: "countries",
+                        key: "id"
+                    }
                 },
                 workLocation: {
                     type: DataTypes.STRING,
@@ -85,6 +100,22 @@ class Employee extends Model {
     }
 
     static associate(models) {
+        Employee.belongsTo(models.Department, {
+            foreignKey: "departmentId",
+            as: "department"
+        });
+        Employee.belongsTo(models.Designation, {
+            foreignKey: "designationId",
+            as: "designation"
+        });
+        Employee.belongsTo(models.EmploymentType, {
+            foreignKey: "employmentTypeId",
+            as: "employmentType"
+        });
+        Employee.belongsTo(models.Country, {
+            foreignKey: "countryId",
+            as: "country"
+        });
         Employee.hasMany(models.SalaryHistory, {
             foreignKey: "employeeId",
             as: "salaryHistory"

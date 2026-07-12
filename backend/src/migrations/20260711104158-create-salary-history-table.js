@@ -54,6 +54,11 @@ module.exports = {
         type: Sequelize.DATE
       }
     });
+
+    // Add index for optimized queries
+    await queryInterface.addIndex("salary_histories", ["employeeId", "effectiveDate", "createdAt"], {
+      name: "salary_histories_employee_date_idx"
+    });
   },
 
   async down(queryInterface) {
