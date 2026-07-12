@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { api } from "../api";
 import { UserPlus, CheckCircle } from "lucide-react";
 
@@ -9,21 +9,65 @@ export default function NewEmployeeTab({ onEmployeeCreated }) {
     lastName: "",
     email: "",
     gender: "MALE",
-    department: "",
-    designation: "",
-    employmentType: "FULL_TIME",
+    departmentId: "",
+    designationId: "",
+    employmentTypeId: "",
     joiningDate: new Date().toISOString().split("T")[0],
-    country: "India",
-    workLocation: "Mumbai",
+    countryId: "",
+    workLocation: "",
     managerId: "",
     salary: "",
     currency: "INR",
     effectiveDate: new Date().toISOString().split("T")[0]
   });
 
+  const [lookups, setLookups] = useState({
+    departments: [],
+    countries: [],
+    designations: [],
+    employmentTypes: []
+  });
+
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [success, setSuccess] = useState(false);
+
+  const fetchLookups = async () => {
+    try {
+      const res = await api.getLookups();
+      setLookups(res.data || { departments: [], countries: [], designations: [], employmentTypes: [] });
+      
+      // Default select values on load if options exist
+      const data = res.data;
+      if (data) {
+        setForm(prev => ({
+          ...prev,
+          departmentId: data.departments[0]?.id || "",
+          designationId: data.designations[0]?.id || "",
+          employmentTypeId: data.employmentTypes[0]?.id || "",
+          countryId: data.countries[0]?.id || "",
+          currency: data.countries[0]?.currency || "INR",
+          workLocation: data.countries[0]?.name === "India" ? "Mumbai" : "New York"
+        }));
+      }
+    } catch (e) {
+      console.error("Error fetching lookups:", e);
+    }
+  };
+
+  useEffect(() => {
+    fetchLookups();
+  }, []);
+
+  const handleCountryChange = (countryIdVal) => {
+    const selectedCountry = lookups.countries.find(c => String(c.id) === String(countryIdVal));
+    setForm(prev => ({
+      ...prev,
+      countryId: countryIdVal,
+      currency: selectedCountry ? selectedCountry.currency : prev.currency,
+      workLocation: selectedCountry ? (selectedCountry.name === "India" ? "Mumbai" : "New York") : prev.workLocation
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,9 +76,15 @@ export default function NewEmployeeTab({ onEmployeeCreated }) {
     setSuccess(false);
 
     try {
-      const payload = { ...form };
-      // Parse numbers/nulls
-      payload.salary = parseFloat(payload.salary);
+      const payload = {
+        ...form,
+        departmentId: parseInt(form.departmentId, 10),
+        designationId: parseInt(form.designationId, 10),
+        employmentTypeId: parseInt(form.employmentTypeId, 10),
+        countryId: parseInt(form.countryId, 10),
+        salary: parseFloat(form.salary)
+      };
+
       if (payload.managerId === "") {
         payload.managerId = null;
       } else {
@@ -50,15 +100,15 @@ export default function NewEmployeeTab({ onEmployeeCreated }) {
         lastName: "",
         email: "",
         gender: "MALE",
-        department: "",
-        designation: "",
-        employmentType: "FULL_TIME",
+        departmentId: lookups.departments[0]?.id || "",
+        designationId: lookups.designations[0]?.id || "",
+        employmentTypeId: lookups.employmentTypes[0]?.id || "",
         joiningDate: new Date().toISOString().split("T")[0],
-        country: "India",
-        workLocation: "Mumbai",
+        countryId: lookups.countries[0]?.id || "",
+        workLocation: lookups.countries[0]?.name === "India" ? "Mumbai" : "New York",
         managerId: "",
         salary: "",
-        currency: "INR",
+        currency: lookups.countries[0]?.currency || "INR",
         effectiveDate: new Date().toISOString().split("T")[0]
       });
       if (typeof onEmployeeCreated === "function") {
@@ -178,26 +228,32 @@ export default function NewEmployeeTab({ onEmployeeCreated }) {
 
             <div className="form-group">
               <label className="filter-label">Department *</label>
-              <input
-                type="text"
-                className="form-input"
+              <select
+                className="filter-select"
                 required
-                value={form.department}
-                onChange={e => setForm({ ...form, department: e.target.value })}
-                placeholder="e.g. Engineering"
-              />
+                value={form.departmentId}
+                onChange={e => setForm({ ...form, departmentId: e.target.value })}
+              >
+                <option value="">Select Department</option>
+                {lookups.departments.map(d => (
+                  <option key={d.id} value={d.id}>{d.name}</option>
+                ))}
+              </select>
             </div>
 
             <div className="form-group">
               <label className="filter-label">Designation *</label>
-              <input
-                type="text"
-                className="form-input"
+              <select
+                className="filter-select"
                 required
-                value={form.designation}
-                onChange={e => setForm({ ...form, designation: e.target.value })}
-                placeholder="e.g. Senior Developer"
-              />
+                value={form.designationId}
+                onChange={e => setForm({ ...form, designationId: e.target.value })}
+              >
+                <option value="">Select Designation</option>
+                {lookups.designations.map(d => (
+                  <option key={d.id} value={d.id}>{d.title}</option>
+                ))}
+              </select>
             </div>
 
             <div className="form-group">
@@ -205,24 +261,29 @@ export default function NewEmployeeTab({ onEmployeeCreated }) {
               <select
                 className="filter-select"
                 required
-                value={form.employmentType}
-                onChange={e => setForm({ ...form, employmentType: e.target.value })}
+                value={form.employmentTypeId}
+                onChange={e => setForm({ ...form, employmentTypeId: e.target.value })}
               >
-                <option value="FULL_TIME">Full Time</option>
-                <option value="CONTRACTOR">Contractor</option>
-                <option value="INTERN">Intern</option>
+                <option value="">Select Employment Type</option>
+                {lookups.employmentTypes.map(t => (
+                  <option key={t.id} value={t.id}>{t.name}</option>
+                ))}
               </select>
             </div>
 
             <div className="form-group">
               <label className="filter-label">Country *</label>
-              <input
-                type="text"
-                className="form-input"
+              <select
+                className="filter-select"
                 required
-                value={form.country}
-                onChange={e => setForm({ ...form, country: e.target.value })}
-              />
+                value={form.countryId}
+                onChange={e => handleCountryChange(e.target.value)}
+              >
+                <option value="">Select Country</option>
+                {lookups.countries.map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
             </div>
 
             <div className="form-group">
@@ -282,12 +343,16 @@ export default function NewEmployeeTab({ onEmployeeCreated }) {
                 required
                 value={form.currency}
                 onChange={e => setForm({ ...form, currency: e.target.value })}
+                disabled
+                style={{ opacity: 0.6, cursor: "not-allowed" }}
               >
-                <option value="INR">INR</option>
-                <option value="USD">USD</option>
-                <option value="EUR">EUR</option>
-                <option value="GBP">GBP</option>
+                {[...new Set(lookups.countries.map(c => c.currency))].map(curr => (
+                  <option key={curr} value={curr}>{curr}</option>
+                ))}
               </select>
+              <span style={{ fontSize: "11px", color: "#9ca3af", marginTop: "4px" }}>
+                Autofilled based on selected country
+              </span>
             </div>
 
             <div className="form-group">

@@ -72,5 +72,11 @@ export const api = {
             body: JSON.stringify(payload)
         });
         return handleResponse(res);
+    },
+
+    // Lookups
+    getLookups: async () => {
+        const res = await fetch(`${BASE_URL}/lookups`);
+        return handleResponse(res);
     }
 };

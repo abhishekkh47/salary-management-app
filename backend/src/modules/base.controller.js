@@ -118,7 +118,7 @@ class BaseController {
   internalServerErrorResponse(res) {
     const response = {
       code: HTTP_STATUS.INTERNAL_SERVER_ERROR,
-      message: res.__("internalError"),
+      message: typeof res.__ === "function" ? res.__("internalError") : "Internal Server Error",
     };
 
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send(response);

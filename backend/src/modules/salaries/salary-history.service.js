@@ -1,5 +1,6 @@
 const { ApiError } = require("../../utils");
 const { HTTP_STATUS } = require("../../utils/constants");
+const { models } = require("../../models");
 
 class SalaryHistoryService {
     constructor(salaryHistoryRepository, employeeRepository, sequelize) {
@@ -20,6 +21,12 @@ class SalaryHistoryService {
         const employee = await this.employeeRepository.findById(employeeId);
         if (!employee) {
             throw new ApiError(HTTP_STATUS.NOT_FOUND, "Employee not found");
+        }
+
+        // Dynamically validate that the currency exists in our countries table
+        const country = await models.Country.findOne({ where: { currency: payload.currency } });
+        if (!country) {
+            throw new ApiError(HTTP_STATUS.BAD_REQUEST, `Unsupported currency: ${payload.currency}`);
         }
 
         const record = await this.salaryHistoryRepository.create({

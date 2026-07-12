@@ -4,10 +4,7 @@ import {
   Users,
   CreditCard,
   TrendingUp,
-  MapPin,
-  Briefcase,
-  SlidersHorizontal,
-  DollarSign
+  SlidersHorizontal
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -17,7 +14,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   PieChart,
   Pie,
   Cell
@@ -29,14 +25,17 @@ export default function DashboardTab() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
-    country: "",
-    department: "",
-    employmentType: ""
+    countryId: "",
+    departmentId: "",
+    employmentTypeId: ""
   });
 
-  // Extract unique filters from stats on initial load for dropdowns
-  const [availableCountries, setAvailableCountries] = useState([]);
-  const [availableDepartments, setAvailableDepartments] = useState([]);
+  const [lookups, setLookups] = useState({
+    departments: [],
+    countries: [],
+    designations: [],
+    employmentTypes: []
+  });
 
   const fetchStats = async () => {
     try {
@@ -50,27 +49,22 @@ export default function DashboardTab() {
     }
   };
 
+  const fetchLookups = async () => {
+    try {
+      const res = await api.getLookups();
+      setLookups(res.data || { departments: [], countries: [], designations: [], employmentTypes: [] });
+    } catch (e) {
+      console.error("Error fetching lookups:", e);
+    }
+  };
+
+  useEffect(() => {
+    fetchLookups();
+  }, []);
+
   useEffect(() => {
     fetchStats();
   }, [filters]);
-
-  // Load dropdown lists once
-  useEffect(() => {
-    const loadDropdownData = async () => {
-      try {
-        const data = await api.getAnalytics({});
-        if (data.data) {
-          const countries = data.data.payrollByCountry.map(c => c.country);
-          const depts = data.data.payrollByDepartment.map(d => d.department);
-          setAvailableCountries(countries);
-          setAvailableDepartments(depts);
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    };
-    loadDropdownData();
-  }, []);
 
   if (loading && !stats) {
     return <div className="loading-state">Loading dashboard analytics...</div>;
@@ -107,13 +101,13 @@ export default function DashboardTab() {
           <label className="filter-label">Country</label>
           <select
             className="filter-select"
-            value={filters.country}
-            onChange={e => setFilters({ ...filters, country: e.target.value })}
+            value={filters.countryId}
+            onChange={e => setFilters({ ...filters, countryId: e.target.value })}
             id="filter-country"
           >
             <option value="">All Countries</option>
-            {availableCountries.map(c => (
-              <option key={c} value={c}>{c}</option>
+            {lookups.countries.map(c => (
+              <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
         </div>
@@ -122,13 +116,13 @@ export default function DashboardTab() {
           <label className="filter-label">Department</label>
           <select
             className="filter-select"
-            value={filters.department}
-            onChange={e => setFilters({ ...filters, department: e.target.value })}
+            value={filters.departmentId}
+            onChange={e => setFilters({ ...filters, departmentId: e.target.value })}
             id="filter-department"
           >
             <option value="">All Departments</option>
-            {availableDepartments.map(d => (
-              <option key={d} value={d}>{d}</option>
+            {lookups.departments.map(d => (
+              <option key={d.id} value={d.id}>{d.name}</option>
             ))}
           </select>
         </div>
@@ -137,22 +131,22 @@ export default function DashboardTab() {
           <label className="filter-label">Employment Type</label>
           <select
             className="filter-select"
-            value={filters.employmentType}
-            onChange={e => setFilters({ ...filters, employmentType: e.target.value })}
+            value={filters.employmentTypeId}
+            onChange={e => setFilters({ ...filters, employmentTypeId: e.target.value })}
             id="filter-employment-type"
           >
             <option value="">All Types</option>
-            <option value="FULL_TIME">Full Time</option>
-            <option value="CONTRACTOR">Contractor</option>
-            <option value="INTERN">Intern</option>
+            {lookups.employmentTypes.map(t => (
+              <option key={t.id} value={t.id}>{t.name}</option>
+            ))}
           </select>
         </div>
 
-        {(filters.country || filters.department || filters.employmentType) && (
+        {(filters.countryId || filters.departmentId || filters.employmentTypeId) && (
           <button
             className="btn btn-outline"
             style={{ padding: "6px 12px", fontSize: "12px", marginTop: "18px" }}
-            onClick={() => setFilters({ country: "", department: "", employmentType: "" })}
+            onClick={() => setFilters({ countryId: "", departmentId: "", employmentTypeId: "" })}
             id="btn-clear-filters"
           >
             Clear Filters

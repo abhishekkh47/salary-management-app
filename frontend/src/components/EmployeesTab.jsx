@@ -4,13 +4,11 @@ import {
   Search,
   ChevronLeft,
   ChevronRight,
-  UserCheck,
   Plus,
   Edit2,
   Trash2,
   X,
-  History,
-  TrendingUp
+  History
 } from "lucide-react";
 
 export default function EmployeesTab() {
@@ -21,9 +19,17 @@ export default function EmployeesTab() {
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState({
-    country: "",
-    department: "",
+    countryId: "",
+    departmentId: "",
+    designationId: "",
     employmentStatus: ""
+  });
+
+  const [lookups, setLookups] = useState({
+    departments: [],
+    countries: [],
+    designations: [],
+    employmentTypes: []
   });
 
   const [loading, setLoading] = useState(true);
@@ -47,12 +53,12 @@ export default function EmployeesTab() {
     lastName: "",
     email: "",
     gender: "MALE",
-    department: "",
-    designation: "",
-    employmentType: "FULL_TIME",
+    departmentId: "",
+    designationId: "",
+    employmentTypeId: "",
     employmentStatus: "ACTIVE",
     joiningDate: "",
-    country: "",
+    countryId: "",
     workLocation: "",
     managerId: ""
   });
@@ -78,6 +84,23 @@ export default function EmployeesTab() {
       setLoading(false);
     }
   };
+
+  const fetchLookups = async () => {
+    try {
+      const res = await api.getLookups();
+      const lookupsData = res.data || { departments: [], countries: [], designations: [], employmentTypes: [] };
+      setLookups(lookupsData);
+      if (lookupsData.countries && lookupsData.countries.length > 0) {
+        setRevisionForm(prev => ({ ...prev, currency: lookupsData.countries[0].currency }));
+      }
+    } catch (e) {
+      console.error("Error fetching lookups:", e);
+    }
+  };
+
+  useEffect(() => {
+    fetchLookups();
+  }, []);
 
   useEffect(() => {
     fetchEmployees();
@@ -140,12 +163,12 @@ export default function EmployeesTab() {
       lastName: selectedEmployee.lastName,
       email: selectedEmployee.email,
       gender: selectedEmployee.gender,
-      department: selectedEmployee.department,
-      designation: selectedEmployee.designation,
-      employmentType: selectedEmployee.employmentType,
+      departmentId: selectedEmployee.departmentId,
+      designationId: selectedEmployee.designationId,
+      employmentTypeId: selectedEmployee.employmentTypeId,
       employmentStatus: selectedEmployee.employmentStatus,
       joiningDate: selectedEmployee.joiningDate,
-      country: selectedEmployee.country,
+      countryId: selectedEmployee.countryId,
       workLocation: selectedEmployee.workLocation,
       managerId: selectedEmployee.managerId || ""
     });
@@ -157,7 +180,13 @@ export default function EmployeesTab() {
     e.preventDefault();
     setErrorMsg("");
     try {
-      const payload = { ...editForm };
+      const payload = {
+        ...editForm,
+        departmentId: parseInt(editForm.departmentId, 10),
+        designationId: parseInt(editForm.designationId, 10),
+        employmentTypeId: parseInt(editForm.employmentTypeId, 10),
+        countryId: parseInt(editForm.countryId, 10)
+      };
       if (payload.managerId === "") {
         payload.managerId = null;
       } else {
@@ -173,13 +202,6 @@ export default function EmployeesTab() {
     } catch (error) {
       setErrorMsg(error.message);
     }
-  };
-
-  const formatLakhs = (val) => {
-    if (val >= 100000) {
-      return `₹${(val / 100000).toFixed(2)}L`;
-    }
-    return `₹${val.toLocaleString("en-IN")}`;
   };
 
   return (
@@ -202,15 +224,42 @@ export default function EmployeesTab() {
         <div className="filter-group">
           <select
             className="filter-select"
-            value={filters.country}
-            onChange={e => { setFilters({ ...filters, country: e.target.value }); setPage(1); }}
+            value={filters.countryId}
+            onChange={e => { setFilters({ ...filters, countryId: e.target.value }); setPage(1); }}
             id="list-filter-country"
           >
             <option value="">All Countries</option>
-            <option value="India">India</option>
-            <option value="United States">United States</option>
-            <option value="United Kingdom">United Kingdom</option>
-            <option value="Canada">Canada</option>
+            {lookups.countries.map(c => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="filter-group">
+          <select
+            className="filter-select"
+            value={filters.departmentId}
+            onChange={e => { setFilters({ ...filters, departmentId: e.target.value }); setPage(1); }}
+            id="list-filter-department"
+          >
+            <option value="">All Departments</option>
+            {lookups.departments.map(d => (
+              <option key={d.id} value={d.id}>{d.name}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="filter-group">
+          <select
+            className="filter-select"
+            value={filters.designationId}
+            onChange={e => { setFilters({ ...filters, designationId: e.target.value }); setPage(1); }}
+            id="list-filter-designation"
+          >
+            <option value="">All Designations</option>
+            {lookups.designations.map(d => (
+              <option key={d.id} value={d.id}>{d.title}</option>
+            ))}
           </select>
         </div>
 
@@ -251,14 +300,14 @@ export default function EmployeesTab() {
                   <td style={{ fontWeight: 600 }}>{emp.employeeCode}</td>
                   <td>{`${emp.firstName} ${emp.lastName}`}</td>
                   <td>{emp.email}</td>
-                  <td>{emp.department}</td>
-                  <td>{emp.designation}</td>
+                  <td>{emp.department ? emp.department.name : "N/A"}</td>
+                  <td>{emp.designation ? emp.designation.title : "N/A"}</td>
                   <td>
                     <span className={`badge ${(emp.employmentStatus || "").toLowerCase()}`}>
                       {emp.employmentStatus}
                     </span>
                   </td>
-                  <td>{`${emp.workLocation}, ${emp.country}`}</td>
+                  <td>{`${emp.workLocation}, ${emp.country ? emp.country.name : "N/A"}`}</td>
                 </tr>
               ))}
               {employees.length === 0 && (
@@ -310,7 +359,7 @@ export default function EmployeesTab() {
               <div>
                 <h2>{`${selectedEmployee.firstName} ${selectedEmployee.lastName}`}</h2>
                 <p style={{ color: "#9ca3af", fontSize: "14px", marginTop: "2px" }}>
-                  {selectedEmployee.designation} &bull; {selectedEmployee.employeeCode}
+                  {selectedEmployee.designation ? selectedEmployee.designation.title : "N/A"} &bull; {selectedEmployee.employeeCode}
                 </p>
               </div>
               <X className="modal-close" onClick={() => setShowDrawer(false)} />
@@ -344,15 +393,17 @@ export default function EmployeesTab() {
                 </div>
                 <div>
                   <span style={{ fontSize: "12px", color: "#9ca3af" }}>Department</span>
-                  <p style={{ fontSize: "14px", fontWeight: 500 }}>{selectedEmployee.department}</p>
+                  <p style={{ fontSize: "14px", fontWeight: 500 }}>{selectedEmployee.department ? selectedEmployee.department.name : "N/A"}</p>
                 </div>
                 <div>
                   <span style={{ fontSize: "12px", color: "#9ca3af" }}>Employment Type</span>
-                  <p style={{ fontSize: "14px", fontWeight: 500 }}>{selectedEmployee.employmentType.replace("_", " ")}</p>
+                  <p style={{ fontSize: "14px", fontWeight: 500 }}>
+                    {selectedEmployee.employmentType ? selectedEmployee.employmentType.name.replace("_", " ") : "N/A"}
+                  </p>
                 </div>
                 <div>
                   <span style={{ fontSize: "12px", color: "#9ca3af" }}>Country</span>
-                  <p style={{ fontSize: "14px", fontWeight: 500 }}>{selectedEmployee.country}</p>
+                  <p style={{ fontSize: "14px", fontWeight: 500 }}>{selectedEmployee.country ? selectedEmployee.country.name : "N/A"}</p>
                 </div>
                 <div>
                   <span style={{ fontSize: "12px", color: "#9ca3af" }}>Work Location</span>
@@ -387,7 +438,7 @@ export default function EmployeesTab() {
                 </div>
 
                 <div className="timeline">
-                  {selectedEmployee.salaryHistory?.sort((a, b) => new Date(b.effectiveDate) - new Date(a.effectiveDate)).map((history, idx) => (
+                  {selectedEmployee.salaryHistory?.sort((a, b) => new Date(b.effectiveDate) - new Date(a.effectiveDate)).map((history) => (
                     <div className="timeline-item" key={history.id}>
                       <div className="timeline-dot"></div>
                       <div className="timeline-content">
@@ -447,10 +498,9 @@ export default function EmployeesTab() {
                     required
                     id="revision-currency"
                   >
-                    <option value="INR">INR</option>
-                    <option value="USD">USD</option>
-                    <option value="EUR">EUR</option>
-                    <option value="GBP">GBP</option>
+                    {[...new Set(lookups.countries.map(c => c.currency))].map(curr => (
+                      <option key={curr} value={curr}>{curr}</option>
+                    ))}
                   </select>
                 </div>
 
@@ -562,35 +612,62 @@ export default function EmployeesTab() {
 
                 <div className="filter-group">
                   <label className="filter-label">Department</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={editForm.department}
-                    onChange={e => setEditForm({ ...editForm, department: e.target.value })}
+                  <select
+                    className="filter-select"
+                    value={editForm.departmentId}
+                    onChange={e => setEditForm({ ...editForm, departmentId: e.target.value })}
                     required
-                  />
+                  >
+                    <option value="">Select Department</option>
+                    {lookups.departments.map(d => (
+                      <option key={d.id} value={d.id}>{d.name}</option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="filter-group">
                   <label className="filter-label">Designation</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={editForm.designation}
-                    onChange={e => setEditForm({ ...editForm, designation: e.target.value })}
+                  <select
+                    className="filter-select"
+                    value={editForm.designationId}
+                    onChange={e => setEditForm({ ...editForm, designationId: e.target.value })}
                     required
-                  />
+                  >
+                    <option value="">Select Designation</option>
+                    {lookups.designations.map(d => (
+                      <option key={d.id} value={d.id}>{d.title}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="filter-group">
+                  <label className="filter-label">Employment Type</label>
+                  <select
+                    className="filter-select"
+                    value={editForm.employmentTypeId}
+                    onChange={e => setEditForm({ ...editForm, employmentTypeId: e.target.value })}
+                    required
+                  >
+                    <option value="">Select Employment Type</option>
+                    {lookups.employmentTypes.map(t => (
+                      <option key={t.id} value={t.id}>{t.name}</option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="filter-group">
                   <label className="filter-label">Country</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={editForm.country}
-                    onChange={e => setEditForm({ ...editForm, country: e.target.value })}
+                  <select
+                    className="filter-select"
+                    value={editForm.countryId}
+                    onChange={e => setEditForm({ ...editForm, countryId: e.target.value })}
                     required
-                  />
+                  >
+                    <option value="">Select Country</option>
+                    {lookups.countries.map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="filter-group">
