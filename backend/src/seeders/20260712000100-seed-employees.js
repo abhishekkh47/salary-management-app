@@ -3,6 +3,7 @@
 const generateEmployee = require("./helpers/employee-generator");
 const generateSalary = require("./helpers/salary-generator");
 const { DEPARTMENTS, DESIGNATIONS, EMPLOYMENT_TYPES, COUNTRIES, CURRENCIES } = require("./helpers/constants");
+const { models } = require("../models");
 
 const EXCHANGE_RATES = {
     India: 1.0,
@@ -59,22 +60,10 @@ module.exports = {
         });
 
         // 2. Fetch seeded lookup values to map them
-        const departments = await queryInterface.sequelize.query(
-            `SELECT id, name FROM departments`,
-            { type: queryInterface.sequelize.QueryTypes.SELECT }
-        );
-        const countries = await queryInterface.sequelize.query(
-            `SELECT id, name, currency, exchangeRate FROM countries`,
-            { type: queryInterface.sequelize.QueryTypes.SELECT }
-        );
-        const designations = await queryInterface.sequelize.query(
-            `SELECT id, title, minSalary, maxSalary FROM designations`,
-            { type: queryInterface.sequelize.QueryTypes.SELECT }
-        );
-        const employmentTypes = await queryInterface.sequelize.query(
-            `SELECT id, name FROM employment_types`,
-            { type: queryInterface.sequelize.QueryTypes.SELECT }
-        );
+        const departments = await models.Department.findAll({ raw: true });
+        const countries = await models.Country.findAll({ raw: true });
+        const designations = await models.Designation.findAll({ raw: true });
+        const employmentTypes = await models.EmploymentType.findAll({ raw: true });
 
         const lookupDb = {
             departments,

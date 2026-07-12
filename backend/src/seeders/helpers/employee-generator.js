@@ -9,7 +9,7 @@ const {
     EMPLOYMENT_TYPES,
     EMPLOYMENT_STATUS,
     GENDERS
-} = require("../../utils/constants");
+} = require("./constants");
 
 function weightedRandom(items) {
 
@@ -117,9 +117,7 @@ function generateEmployee(index, lookupDb) {
         managerId: generateManagerId(index),
         salary,
         currency
-
     };
-
 }
 
 module.exports = generateEmployee;
