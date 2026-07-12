@@ -2,144 +2,110 @@
 
 ## 1. Overview
 
-The Employee Salary Management System uses a relational database (SQLite) to store employee information and salary history. The schema is normalized to separate employee details from salary records, ensuring historical salary data is preserved while keeping employee information concise.
+The Employee Salary Management System uses a relational SQLite database. The schema is normalized, extracting designations, departments, countries, and employment types into separate lookup tables. 
 
 The design prioritizes:
-
 - Data integrity
 - Historical traceability
-- Scalability
-- Efficient querying
-- Simplicity for the MVP
+- Fast query performance using indexes
+- Normalization
 
 ---
 
-## 2. Design Principles
+## 2. Entity Relationship Diagram
 
-The database schema follows these principles:
-
-- Normalize salary history from employee records.
-- Preserve historical salary changes through immutable salary records.
-- Use soft deletion for employees to avoid losing historical data.
-- Use foreign keys to maintain referential integrity.
-- Index commonly queried fields for fast search and analytics.
-
----
-
-## 3. Entity Relationship Diagram
-
-```text
-                Employee
-          ---------------------
-                id
-                 │
-        managerId│
-                 ▼
-             Employee
-
-Employee (1)
-     │
-     │
-     ▼
-SalaryHistory (Many)
+```
+       +--------------+
+       |   Country    |
+       +-------+------+
+               | (1)
+               |
+               | (Many)
+       +-------▼------+               +-----------------+
+       |   Employee   |◄─────────────┤  SalaryHistory  |
+       +-------+------+ (1)    (Many)+-----------------+
+               | (Many)
+               |
+               ▼ (1)
+       +-------+------+
+       |  Department  |
+       +--------------+
 ```
 
 ---
 
-## 4. Employee
+## 3. Schema Definitions
 
+### Lookup Tables
 
-| Column           | Type     | Description                             |
-| ---------------- | -------- | --------------------------------------- |
-| id               | UUID     | Primary Key                             |
-| employeeCode     | String   | Unique employee identifier              |
-| firstName        | String   | Employee first name                     |
-| lastName         | String   | Employee last name                      |
-| email            | String   | Unique email address                    |
-| gender           | Enum     | Male, Female, Other                     |
-| department       | String   | Department name                         |
-| designation      | String   | Job title                               |
-| employmentType   | Enum     | Full-Time, Contractor, Intern           |
-| employmentStatus | Enum     | Active, Inactive                        |
-| joiningDate      | Date     | Employee joining date                   |
-| country          | String   | Country of employment                   |
-| workLocation     | String   | Office location                         |
-| managerId        | UUID     | Self-referencing foreign key (nullable) |
-| createdAt        | DateTime | Record creation timestamp               |
-| updatedAt        | DateTime | Last modification timestamp             |
-| deletedAt        | DateTime | Soft delete timestamp                   |
+#### Countries
+* `id` (INTEGER, PK, Auto-Increment)
+* `name` (VARCHAR, Unique)
+* `currency` (VARCHAR)
+* `exchangeRate` (DECIMAL)
 
+#### Departments
+* `id` (INTEGER, PK, Auto-Increment)
+* `name` (VARCHAR, Unique)
+
+#### Designations
+* `id` (INTEGER, PK, Auto-Increment)
+* `title` (VARCHAR, Unique)
+
+#### EmploymentTypes
+* `id` (INTEGER, PK, Auto-Increment)
+* `name` (VARCHAR, Unique)
 
 ---
 
-## 5. Salary History
-
-
-| Column         | Type     | Description                                                 |
-| -------------- | -------- | ----------------------------------------------------------- |
-| id             | UUID     | Primary Key                                                 |
-| employeeId     | UUID     | Foreign key to Employee                                     |
-| salary         | Decimal  | Base salary amount                                          |
-| currency       | String   | Salary currency                                             |
-| effectiveDate  | Date     | Date from which the salary is effective                     |
-| revisionReason | Enum     | Joining, Annual Review, Promotion, Market Adjustment, Other |
-| createdAt      | DateTime | Record creation timestamp                                   |
-
-
-Salary history records are immutable. Any salary change creates a new record instead of updating an existing one.
-
----
-
-## 6. Relationships
-
-- One Employee can have many Salary History records.
-- One Employee may report to another Employee through `managerId`.
+### Employees Table
+* `id` (INTEGER, PK, Auto-Increment)
+* `employeeCode` (VARCHAR, Unique) - e.g. `EMP00001`
+* `firstName` (VARCHAR)
+* `lastName` (VARCHAR)
+* `email` (VARCHAR, Unique)
+* `gender` (VARCHAR) - `MALE`, `FEMALE`, `OTHER`
+* `departmentId` (INTEGER, FK -> Departments.id)
+* `designationId` (INTEGER, FK -> Designations.id)
+* `employmentTypeId` (INTEGER, FK -> EmploymentTypes.id)
+* `employmentStatus` (VARCHAR) - `ACTIVE`, `INACTIVE`
+* `joiningDate` (DATE)
+* `countryId` (INTEGER, FK -> Countries.id)
+* `workLocation` (VARCHAR)
+* `managerId` (INTEGER, Nullable, FK -> Employees.id)
+* `createdAt` (DATETIME)
+* `updatedAt` (DATETIME)
+* `deletedAt` (DATETIME, Nullable)
 
 ---
 
-## 7. Indexing Strategy
-
-### Employee
-
-- employeeCode (Unique)
-- email (Unique)
-- department
-- country
-- employmentStatus
-- employmentType
-- managerId
-
-### SalaryHistory
-
-- employeeId
-- effectiveDate
-- currency
+### SalaryHistories Table
+* `id` (INTEGER, PK, Auto-Increment)
+* `employeeId` (INTEGER, FK -> Employees.id)
+* `salary` (DECIMAL)
+* `currency` (VARCHAR)
+* `effectiveDate` (DATE)
+* `revisionReason` (VARCHAR) - `JOINING`, `ANNUAL_REVIEW`, `PROMOTION`, `MARKET_ADJUSTMENT`, `OTHER`
+* `createdAt` (DATETIME)
+* `updatedAt` (DATETIME)
 
 ---
 
-## 8. Seed Strategy
+## 4. Key Relationships
 
-The database will be seeded with:
-
-- 10,000 employees
-- Approximately 35,000 salary history records
-- 15 departments
-- 20 countries
-- 40 work locations
-- Random manager hierarchy
-- Realistic salary progression (2–5 revisions per employee)
+1. **Manager Hierarchy**: Self-referencing relationship where `managerId` references another `Employee.id`. An employee can have many `subordinates` reporting to them.
+2. **Salary History**: One employee can have many immutable salary history records, sorted chronologically by `effectiveDate`.
 
 ---
 
-## 9. Future Enhancements
+## 5. Indexing Strategy
 
-The schema can be extended to support:
-
-- Payroll processing
-- Bonus and allowance management
-- Multi-currency reporting
-- Audit logs
-- Approval workflows
-- Authentication & RBAC
-- AI-powered salary insights
-
+To maintain high query responsiveness across 10,000+ employee records:
+* **Employees**:
+  * Index on `employeeCode` (Unique)
+  * Index on `email` (Unique)
+  * Index on `departmentId`, `countryId`, `designationId`, and `employmentTypeId` (Foreign keys)
+  * Index on `managerId` (Self-referencing lookup)
+* **SalaryHistories**:
+  * Index on `employeeId` (Foreign key lookup)
+  * Index on `effectiveDate` (Timeline ordering)

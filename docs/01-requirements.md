@@ -6,23 +6,23 @@ ACME Organization currently manages salary information for approximately 10,000 
 
 The objective of this project is to build a web-based Employee Salary Management System (ESMS) that enables HR Managers to efficiently manage employee salary information, maintain historical salary records, and gain meaningful insights into organizational compensation through dashboards and reporting.
 
-This application is intended as an MVP (Minimum Viable Product) that focuses on salary management and reporting while providing a clean, maintainable, and scalable architecture.
+This application is designed as a high-performance web dashboard that focuses on salary management and reporting while providing a clean, maintainable, and scalable architecture.
 
 ---
 
-# 2. Goal
+## 2. Goal
 
 Develop a production-quality web application that allows HR Managers to:
 
-- Manage employee salary information
-- Track salary revisions over time
-- Search and filter employee records
-- View payroll analytics and salary insights
-- Answer common questions regarding employee compensation through reports and analytics
+- Manage employee salary information (with dynamic lookup bindings).
+- Track salary revisions over time.
+- Search and filter employee records with high responsiveness.
+- View payroll analytics and salary insights.
+- Answer common questions regarding employee compensation through reports and analytics.
 
 ---
 
-# 3. Primary User
+## 3. Primary User
 
 **HR Manager**
 
@@ -30,100 +30,73 @@ The HR Manager is responsible for maintaining salary information, reviewing empl
 
 ---
 
-# 4. In Scope
+## 4. In Scope
 
 The MVP includes the following capabilities:
 
 ### Employee Management
 
-- View employees
-- Add employees
-- Update employee information
-- Soft delete employees
-- Search, filter, sort, and paginate employee records
+- View employees.
+- Add employees (with auto-derived country currencies and work locations).
+- Update employee information (with manager assignment validations).
+- Soft delete / deactivate employees.
+- Search, filter, and paginate employee records dynamically.
 
 ### Salary Management
 
-- Maintain current salary
-- Preserve complete salary history
-- Record salary effective dates
-- Prevent overwriting historical salary data
+- Maintain current salary.
+- Preserve complete salary history.
+- Record salary effective dates.
+- Prevent overwriting historical salary data (salary history is append-only).
+- Lock salary currency to the country's local currency.
 
 ### Dashboard & Analytics
 
-- Total employees
-- Total payroll
-- Average salary
-- Highest and lowest salary
-- Salary distribution
-- Department-wise salary insights
-- Country-wise salary insights
-
-### Reporting
-
-Provide HR-friendly views that help answer common salary-related questions such as:
-
-- Highest paid employees
-- Average salary by department
-- Payroll by country
-- Salary distribution across the organization
+- Headcount metrics (Total, Active, Inactive).
+- Financial metrics (Total Payroll in Crores/Lakhs, Average Salary).
+- Chart views (Payroll by Department, Salary distribution breakdown, Country distribution).
 
 ---
 
-# 5. Out of Scope
+## 5. Out of Scope
 
 The following features are intentionally excluded from this MVP:
 
-- Payroll processing
-- Tax calculations
-- Bonus and allowance management
-- Employee attendance
-- Leave management
-- Authentication and authorization
-- Role-based access control
-- Currency conversion
-- Excel import/export
-- Approval workflows
-- Notifications
-- Audit logging
-
-These features are excluded to keep the project focused on solving the primary salary management problem while maintaining a manageable implementation scope.
+- Automatic payroll processing & disbursal.
+- Tax calculations.
+- Bonus and allowance management.
+- Employee attendance & Leave management.
+- Authentication & multi-tenant tenancy.
+- Role-based access control (RBAC).
+- Excel import/export.
+- Multi-step approval workflows.
+- Notifications & Audit logging.
 
 ---
 
-# 6. Assumptions
-
-The following assumptions are made due to limited business requirements:
+## 6. Assumptions
 
 - The application is used by a single HR Manager.
 - Employee salaries are stored in their local currency.
 - Salary history is immutable once recorded.
 - Only base salary is managed.
 - Employees belong to a single department and country.
-- Seed data will contain approximately 10,000 employees.
+- Seed data contains approximately 10,000 employees.
 
 ---
 
-# 7. Success Criteria
+## 7. Success Criteria
 
-The project will be considered successful if the HR Manager can:
-
-- Efficiently manage employee salary information
-- View salary history without losing historical records
-- Search and filter employees quickly
-- Generate meaningful salary insights through dashboards
-- Handle a dataset of 10,000 employees with good responsiveness
+- HR Manager can efficiently manage employee salary information.
+- Complete salary history is preserved.
+- Fast pagination and filtering across 10,000 records.
+- UI elements auto-bind to database lookups dynamically.
 
 ---
 
-# 8. Design Principles
+## 8. Design Principles
 
-The solution should emphasize:
-
-- Simplicity over unnecessary complexity
-- Clean and maintainable architecture
-- Good engineering practices
-- Scalable data model
-- Production-quality code
-- Comprehensive automated testing
-- Clear documentation
+- Simplicity over unnecessary complexity.
+- Clean and maintainable Controller-Service-Repository architecture.
+- Scalable data model with database-level indexes.
+- Production-quality code with comprehensive styling and UI feedback.
