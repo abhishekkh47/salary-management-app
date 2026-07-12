@@ -35,6 +35,20 @@ class EmployeeService {
                     EmployeeMessages.EMPLOYEE_CODE_EXISTS
                 );
             }
+            let resolvedManagerId = null;
+            if (payload.managerId) {
+                let manager;
+                if (typeof payload.managerId === "string" && payload.managerId.startsWith("EMP")) {
+                    manager = await this.employeeRepository.findOne({ employeeCode: payload.managerId }, { transaction });
+                } else {
+                    manager = await this.employeeRepository.findById(payload.managerId, { transaction });
+                }
+                if (!manager) {
+                    throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Manager not found");
+                }
+                resolvedManagerId = manager.id;
+            }
+
             const employee = await this.employeeRepository.create(
                 {
                     employeeCode: payload.employeeCode,
@@ -48,7 +62,7 @@ class EmployeeService {
                     joiningDate: payload.joiningDate,
                     countryId: payload.countryId,
                     workLocation: payload.workLocation,
-                    managerId: payload.managerId
+                    managerId: resolvedManagerId
                 },
                 { transaction }
             );
@@ -159,6 +173,23 @@ class EmployeeService {
                 throw new ApiError(HTTP_STATUS.NOT_FOUND, EmployeeMessages.NOT_FOUND);
             }
 
+            let resolvedManagerId = null;
+            if (payload.managerId) {
+                let manager;
+                if (typeof payload.managerId === "string" && payload.managerId.startsWith("EMP")) {
+                    manager = await this.employeeRepository.findOne({ employeeCode: payload.managerId }, { transaction });
+                } else {
+                    manager = await this.employeeRepository.findById(payload.managerId, { transaction });
+                }
+                if (!manager) {
+                    throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Manager not found");
+                }
+                if (parseInt(id, 10) === manager.id) {
+                    throw new ApiError(HTTP_STATUS.BAD_REQUEST, "An employee cannot be their own manager");
+                }
+                resolvedManagerId = manager.id;
+            }
+
             if (payload.email || payload.employeeCode) {
                 const checkEmail = payload.email || employee.email;
                 const checkCode = payload.employeeCode || employee.employeeCode;
@@ -184,7 +215,7 @@ class EmployeeService {
                 joiningDate: payload.joiningDate,
                 countryId: payload.countryId,
                 workLocation: payload.workLocation,
-                managerId: payload.managerId
+                managerId: resolvedManagerId
             }, { transaction });
 
             if (payload.salary !== undefined || payload.currency !== undefined || payload.effectiveDate !== undefined) {

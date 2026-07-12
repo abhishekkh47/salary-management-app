@@ -1,9 +1,18 @@
-const BASE_URL = "http://localhost:3000/api/v1";
+const BASE_URL = "/api/v1";
 
 const handleResponse = async (response) => {
-    const data = await response.json();
+    let data;
+    try {
+        data = await response.json();
+    } catch (e) {
+        if (!response.ok) {
+            throw new Error(`Request failed with status ${response.status}`);
+        }
+        return null;
+    }
     if (!response.ok) {
-        throw new Error(data.message || "Something went wrong.");
+        const errorMsg = data?.message || data?.meta?.message || "Something went wrong.";
+        throw new Error(errorMsg);
     }
     return data;
 };

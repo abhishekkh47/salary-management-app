@@ -170,7 +170,7 @@ export default function EmployeesTab() {
       joiningDate: selectedEmployee.joiningDate,
       countryId: selectedEmployee.countryId,
       workLocation: selectedEmployee.workLocation,
-      managerId: selectedEmployee.managerId || ""
+      managerId: selectedEmployee.managerId ? String(selectedEmployee.managerId).padStart(5, "0") : ""
     });
     setErrorMsg("");
     setShowEditModal(true);
@@ -179,6 +179,10 @@ export default function EmployeesTab() {
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg("");
+    if (editForm.managerId && parseInt(editForm.managerId, 10) === selectedEmployee.id) {
+      setErrorMsg("An employee cannot be their own manager");
+      return;
+    }
     try {
       const payload = {
         ...editForm,
@@ -190,7 +194,7 @@ export default function EmployeesTab() {
       if (payload.managerId === "") {
         payload.managerId = null;
       } else {
-        payload.managerId = parseInt(payload.managerId, 10);
+        payload.managerId = `EMP${payload.managerId.padStart(5, "0")}`;
       }
       await api.updateEmployee(selectedEmployee.id, payload);
       alert("Employee details updated successfully.");
@@ -696,13 +700,31 @@ export default function EmployeesTab() {
 
                 <div className="filter-group">
                   <label className="filter-label">Manager ID</label>
-                  <input
-                    type="number"
-                    className="form-input"
-                    value={editForm.managerId}
-                    onChange={e => setEditForm({ ...editForm, managerId: e.target.value })}
-                    placeholder="None"
-                  />
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    <span style={{
+                      backgroundColor: "#2e303a",
+                      padding: "10.5px 12px",
+                      borderRadius: "6px 0 0 6px",
+                      border: "1px solid #2e303a",
+                      borderRight: "none",
+                      color: "#9ca3af",
+                      fontSize: "14px",
+                      fontWeight: 600
+                    }}>EMP</span>
+                    <input
+                      type="text"
+                      pattern="[0-9]{5}"
+                      maxLength={5}
+                      className="form-input"
+                      style={{ borderRadius: "0 6px 6px 0" }}
+                      value={editForm.managerId}
+                      onChange={e => {
+                        const val = e.target.value.replace(/[^0-9]/g, "");
+                        setEditForm({ ...editForm, managerId: val });
+                      }}
+                      placeholder="00002"
+                    />
+                  </div>
                 </div>
               </div>
 

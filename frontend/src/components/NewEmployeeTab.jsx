@@ -78,6 +78,7 @@ export default function NewEmployeeTab({ onEmployeeCreated }) {
     try {
       const payload = {
         ...form,
+        employeeCode: `EMP${form.employeeCode.padStart(5, "0")}`,
         departmentId: parseInt(form.departmentId, 10),
         designationId: parseInt(form.designationId, 10),
         employmentTypeId: parseInt(form.employmentTypeId, 10),
@@ -88,7 +89,7 @@ export default function NewEmployeeTab({ onEmployeeCreated }) {
       if (payload.managerId === "") {
         payload.managerId = null;
       } else {
-        payload.managerId = parseInt(payload.managerId, 10);
+        payload.managerId = `EMP${payload.managerId.padStart(5, "0")}`;
       }
 
       await api.createEmployee(payload);
@@ -168,14 +169,32 @@ export default function NewEmployeeTab({ onEmployeeCreated }) {
             {/* Employee Details */}
             <div className="form-group">
               <label className="filter-label">Employee Code *</label>
-              <input
-                type="text"
-                className="form-input"
-                required
-                value={form.employeeCode}
-                onChange={e => setForm({ ...form, employeeCode: e.target.value })}
-                placeholder="e.g. EMP-101"
-              />
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <span style={{
+                  backgroundColor: "#2e303a",
+                  padding: "10.5px 12px",
+                  borderRadius: "6px 0 0 6px",
+                  border: "1px solid #2e303a",
+                  borderRight: "none",
+                  color: "#9ca3af",
+                  fontSize: "14px",
+                  fontWeight: 600
+                }}>EMP</span>
+                <input
+                  type="text"
+                  pattern="[0-9]{5}"
+                  maxLength={5}
+                  className="form-input"
+                  style={{ borderRadius: "0 6px 6px 0" }}
+                  required
+                  value={form.employeeCode}
+                  onChange={e => {
+                    const val = e.target.value.replace(/[^0-9]/g, "");
+                    setForm({ ...form, employeeCode: val });
+                  }}
+                  placeholder="00001"
+                />
+              </div>
             </div>
 
             <div className="form-group">
@@ -310,13 +329,31 @@ export default function NewEmployeeTab({ onEmployeeCreated }) {
 
             <div className="form-group">
               <label className="filter-label">Manager ID (Optional)</label>
-              <input
-                type="number"
-                className="form-input"
-                value={form.managerId}
-                onChange={e => setForm({ ...form, managerId: e.target.value })}
-                placeholder="None"
-              />
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <span style={{
+                  backgroundColor: "#2e303a",
+                  padding: "10.5px 12px",
+                  borderRadius: "6px 0 0 6px",
+                  border: "1px solid #2e303a",
+                  borderRight: "none",
+                  color: "#9ca3af",
+                  fontSize: "14px",
+                  fontWeight: 600
+                }}>EMP</span>
+                <input
+                  type="text"
+                  pattern="[0-9]{5}"
+                  maxLength={5}
+                  className="form-input"
+                  style={{ borderRadius: "0 6px 6px 0" }}
+                  value={form.managerId}
+                  onChange={e => {
+                    const val = e.target.value.replace(/[^0-9]/g, "");
+                    setForm({ ...form, managerId: val });
+                  }}
+                  placeholder="00002"
+                />
+              </div>
             </div>
 
             {/* Starting Salary Details */}

@@ -19,7 +19,10 @@ module.exports = {
             joiningDate: Joi.date().required(),
             countryId: Joi.number().integer().positive().required(),
             workLocation: Joi.string().required(),
-            managerId: Joi.number().integer().positive().allow(null),
+            managerId: Joi.alternatives().try(
+                Joi.number().integer().positive(),
+                Joi.string().pattern(/^EMP\d{5}$/)
+            ).allow(null, ""),
             salary: Joi.number().positive().required(),
             currency: Joi.string().required(),
             effectiveDate: Joi.date().required()
@@ -48,7 +51,10 @@ module.exports = {
             joiningDate: Joi.date().optional(),
             countryId: Joi.number().integer().positive().optional(),
             workLocation: Joi.string().optional(),
-            managerId: Joi.number().integer().positive().allow(null).optional(),
+            managerId: Joi.alternatives().try(
+                Joi.number().integer().positive(),
+                Joi.string().pattern(/^EMP\d{5}$/)
+            ).allow(null, "").optional(),
             salary: Joi.number().positive().optional(),
             currency: Joi.string().optional(),
             effectiveDate: Joi.date().optional(),
