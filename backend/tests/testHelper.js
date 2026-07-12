@@ -21,7 +21,9 @@ const initTestDb = async () => {
     });
     
     const desg = await models.Designation.create({
-        title: "Software Engineer"
+        title: "Software Engineer",
+        minSalary: 10000.0,
+        maxSalary: 500000.0
     });
     
     const empType = await models.EmploymentType.create({

@@ -56,7 +56,7 @@ describe("SalaryHistoryService", () => {
                 revisionReason: "ANNUAL_REVIEW"
             };
 
-            const revision = await salaryHistoryService.create(payload);
+            const revision = await salaryHistoryService.addRecord(testEmployee.id, payload);
 
             expect(revision).toBeDefined();
             expect(parseFloat(revision.salary)).toBe(60000);
@@ -71,28 +71,26 @@ describe("SalaryHistoryService", () => {
 
         it("should reject salary revision if currency doesn't match employee's country currency", async () => {
             const payload = {
-                employeeId: testEmployee.id,
                 salary: 750, // in USD
                 currency: "USD", // Mismatch! Employee is in India (INR)
                 effectiveDate: new Date(),
                 revisionReason: "ANNUAL_REVIEW"
             };
 
-            await expect(salaryHistoryService.create(payload)).rejects.toThrow(
+            await expect(salaryHistoryService.addRecord(testEmployee.id, payload)).rejects.toThrow(
                 "Currency must match country currency: INR"
             );
         });
 
         it("should throw error if employee is not found", async () => {
             const payload = {
-                employeeId: 99999, // non-existent
                 salary: 60000,
                 currency: "INR",
                 effectiveDate: new Date(),
                 revisionReason: "ANNUAL_REVIEW"
             };
 
-            await expect(salaryHistoryService.create(payload)).rejects.toThrow("Employee not found");
+            await expect(salaryHistoryService.addRecord(99999, payload)).rejects.toThrow("Employee not found");
         });
     });
 });

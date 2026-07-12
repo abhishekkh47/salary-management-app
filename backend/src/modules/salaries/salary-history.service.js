@@ -18,9 +18,18 @@ class SalaryHistoryService {
     }
 
     async addRecord(employeeId, payload) {
-        const employee = await this.employeeRepository.findById(employeeId);
+        const employee = await this.employeeRepository.findById(employeeId, {
+            include: ["country"]
+        });
         if (!employee) {
             throw new ApiError(HTTP_STATUS.NOT_FOUND, "Employee not found");
+        }
+
+        if (employee.country && payload.currency !== employee.country.currency) {
+            throw new ApiError(
+                HTTP_STATUS.BAD_REQUEST,
+                `Currency must match country currency: ${employee.country.currency}`
+            );
         }
 
         // Dynamically validate that the currency exists in our countries table

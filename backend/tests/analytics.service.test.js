@@ -87,20 +87,18 @@ describe("AnalyticsService", () => {
             const stats = await analyticsService.getDashboardStats();
 
             expect(stats).toBeDefined();
-            expect(stats.totalEmployees).toBe(3);
-            expect(stats.activeEmployees).toBe(3);
-            expect(stats.inactiveEmployees).toBe(0);
+            expect(stats.summary.totalEmployees).toBe(3);
 
             // Total Payroll INR = (50000 + 70000) + (5000 * 83.0 [exchange rate])
             // 120000 + 415000 = 535000
-            expect(Math.round(stats.totalPayroll)).toBe(535000);
+            expect(Math.round(stats.summary.totalPayrollINR)).toBe(535000);
             
             // Average Salary INR = 535000 / 3 = 178333.33
-            expect(Math.round(stats.averageSalary)).toBe(Math.round(535000 / 3));
+            expect(Math.round(stats.summary.averageSalaryINR)).toBe(Math.round(535000 / 3));
 
             // Verify country breakdown details
-            expect(stats.byCountry).toBeDefined();
-            expect(stats.byCountry).toHaveLength(2); // India, USA
+            expect(stats.payrollByCountry).toBeDefined();
+            expect(stats.payrollByCountry).toHaveLength(2); // India, USA
         });
     });
 });

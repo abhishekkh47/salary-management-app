@@ -1,3 +1,9 @@
-export * from "./constants.js"
-export * from "./apiError.js"
-export * from "./helper.js"
+const constants = require("./constants");
+const { ApiError } = require("./apiError");
+const helper = require("./helper");
+
+module.exports = {
+    ...constants,
+    ApiError,
+    ...helper
+};
