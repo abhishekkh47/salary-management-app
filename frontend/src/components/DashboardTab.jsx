@@ -82,8 +82,11 @@ export default function DashboardTab() {
 
   // Helper to format currency values to lakhs
   const formatLakhs = (val) => {
+    if (val >= 10000000) {
+      return `₹${(val / 10000000).toFixed(2)} Cr`;
+    }
     if (val >= 100000) {
-      return `₹${(val / 100000).toFixed(2)}L`;
+      return `₹${(val / 100000).toFixed(2)} L`;
     }
     return `₹${val.toLocaleString("en-IN")}`;
   };
@@ -193,7 +196,11 @@ export default function DashboardTab() {
               <BarChart data={payrollByDepartment || []}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#2e303a" />
                 <XAxis dataKey="department" stroke="#9ca3af" fontSize={11} />
-                <YAxis stroke="#9ca3af" fontSize={11} />
+                <YAxis
+                  stroke="#9ca3af"
+                  fontSize={11}
+                  tickFormatter={(value) => value >= 10000000 ? `${(value / 10000000).toFixed(0)}Cr` : value >= 100000 ? `${(value / 100000).toFixed(0)}L` : value}
+                />
                 <Tooltip
                   contentStyle={{ backgroundColor: "#1f2028", borderColor: "#2e303a" }}
                   formatter={(value) => [`₹${(value / 100000).toFixed(1)}L`, "Total Payroll"]}
