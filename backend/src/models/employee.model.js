@@ -37,7 +37,7 @@ class Employee extends Model {
                     }
                 },
                 gender: {
-                    type: DataTypes.ENUM(...Gender.values()),
+                    type: DataTypes.ENUM(Object.values(Gender)),
                     allowNull: false
                 },
                 department: {
@@ -49,11 +49,11 @@ class Employee extends Model {
                     allowNull: false
                 },
                 employmentType: {
-                    type: DataTypes.ENUM(...EmploymentType.values()),
+                    type: DataTypes.ENUM(Object.values(EmploymentType)),
                     allowNull: false
                 },
                 employmentStatus: {
-                    type: DataTypes.ENUM(...EmploymentStatus.values()),
+                    type: DataTypes.ENUM(Object.values(EmploymentStatus)),
                     defaultValue: EmploymentStatus.ACTIVE,
                     allowNull: false
                 },
@@ -82,6 +82,13 @@ class Employee extends Model {
                 paranoid: true
             }
         );
+    }
+
+    static associate(models) {
+        Employee.hasMany(models.SalaryHistory, {
+            foreignKey: "employeeId",
+            as: "salaryHistory"
+        });
     }
 }
 

@@ -1,5 +1,7 @@
 "use strict";
 
+const { Gender } = require("../utils/constants");
+
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable("employees", {
@@ -33,7 +35,7 @@ module.exports = {
       },
 
       gender: {
-        type: Sequelize.ENUM("Male", "Female", "Other"),
+        type: Sequelize.ENUM(Object.values(Gender)),
         allowNull: false
       },
 
@@ -48,21 +50,14 @@ module.exports = {
       },
 
       employmentType: {
-        type: Sequelize.ENUM(
-          "FULL_TIME",
-          "CONTRACTOR",
-          "INTERN"
-        ),
+        type: Sequelize.ENUM(Object.values(EmploymentType)),
         allowNull: false
       },
 
       employmentStatus: {
-        type: Sequelize.ENUM(
-          "ACTIVE",
-          "INACTIVE"
-        ),
+        type: Sequelize.ENUM(Object.values(EmploymentStatus)),
         allowNull: false,
-        defaultValue: "ACTIVE"
+        defaultValue: EmploymentStatus.ACTIVE
       },
 
       joiningDate: {
